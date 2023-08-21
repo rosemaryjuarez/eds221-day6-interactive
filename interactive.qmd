@@ -9,3 +9,54 @@ library(tidyverse)
 library(janitor)
 library(here)
 ```
+
+```{r}
+wb_indicators <- read_csv(here('data', 'wb_indicators.csv'), na = c('..', ''))
+
+```
+
+```{r}
+wb_indicators_long <- wb_indicators %>% 
+  pivot_longer(cols = `2001 [YR2001]`: `2020 [YR2020]`, 
+               names_to = 'year',
+               values_to = 'indicator_value') 
+```
+
+```{r}
+wb_indicators_clean <- wb_indicators_long %>% 
+  tidyr::separate(col = year, into = c('year', 'year_chr'), sep = ' ') %>% 
+  dplyr::select(-year_chr, -`Country Code`, -series)
+```
+
+```{r}
+wb_indicators_tidy <- wb_indicators_clean %>% 
+  drop_na(`Series Name`) %>% 
+  pivot_wider(names_from = `Series Name`,
+              values_from = indicator_value) %>% 
+  mutate(year = as.numeric(year))
+```
+
+try not to update the names like this because it is very brittle, as this uses positions to name, which can be risky, since we can subset, arrange, and resort data.
+
+```{r}
+names(wb_indicators_tidy) <- c('country', 'year', 'access_clean_fuels_pp', 'accesss_electricity_pp', 'co2_emissions_kt', 'fossil_fuels_cons_pt', 'water_stress')
+```
+
+better method:
+
+```{r}
+# # wb_indicators_tidy_new <- wb_indicators_tidy%>% 
+#   wb_indicators_tidy <- rename(wb_indicators_tidy, country = 'Country Name',
+#        acccess_fuels_pp =  'Access to clean fuels and technologies for cooking (% of population)',
+#        accesss_electricity_pp = 'access to electricity',
+#        co2_emissions_kt = 'fossil fuels cons',
+#        water_stress = 'water stress')
+```
+
+this isnt working down below, i think it has something to do with the muttate year i did above
+
+```{r}
+ggplot(data = wb_indicators_tidy, aes(x = year, y = co2_emissions_kt)) + 
+  geom_line(aes(color = country)) +
+  theme_classic()
+```
