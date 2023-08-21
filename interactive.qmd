@@ -1,0 +1,11 @@
+---
+title: "interactive 1"
+format: html
+editor: visual
+---
+
+```{r}
+library(tidyverse)
+library(janitor)
+library(here)
+```
